@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditor;
 
 public class Controller : MonoBehaviour
 {
@@ -80,7 +81,7 @@ public class Controller : MonoBehaviour
     }
 
     void Update()
-    { 
+    {
         //Player Movement
         if (canMove)
         {
@@ -99,11 +100,11 @@ public class Controller : MonoBehaviour
                 //Increase the acceleration while input is being pressed
                 currentAccel += accelRate;
 
-                if(currentAccel > maxAccel)
+                if (currentAccel > maxAccel)
                 {
                     currentAccel = maxAccel;
                 }
-                else if(currentAccel < minAccel)
+                else if (currentAccel < minAccel)
                 {
                     currentAccel = minAccel;
                 }
@@ -329,17 +330,91 @@ public class Controller : MonoBehaviour
         }
     }
 
-    public void Knockback(Vector3 direction,float force,float time)
+    public void Knockback(Vector3 knockbackDirection, float knockbackforce, float knockbackTime)
     {
         //Restrict a direcction to a fixed position
-        direction = direction.normalized;
+        knockbackDirection = knockbackDirection.normalized;
 
         //Turn off player movement
-        canMove = false;
+        StartCoroutine(StopMovementForTime(knockbackTime));
 
         //Apply the knockback force in direction
-        moveDirection = direction * knockbackForce;
+        moveDirection = knockbackDirection * knockbackForce;
+    }
+
+    public IEnumerator StopMovementForTime(float time)
+    {
+        canMove = false;
+        yield return new WaitForSeconds(time);
+        canMove = true;
+    }
+
+    public IEnumerator StopAbilityForTime(float time)
+    {
+        canAbility = false;
+        yield return new WaitForSeconds(time);
+        canAbility = true;
     }
 }
 
+/*
+#region Editor
+[CustomEditor(typeof(Controller))]
+public class ControllerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        Controller con = (Controller)target;
+        Vector3 dir = new Vector3(0, 0, 0);
+        float theforce = 1;
+        float thetime = 1;
 
+        //DrawDefaultInspector();
+
+
+        if (GUILayout.Button("Knockback", EditorStyles.miniButtonMid))
+        {
+            con.Knockback(dir,theforce,thetime);
+        }
+
+        /*
+            showCurrent = EditorGUILayout.ToggleLeft("Show Current Health", showCurrent);
+            EditorGUILayout.Space();
+            stats.totalArmor = EditorGUILayout.IntField("Total Armor", stats.totalArmor);
+            if (showCurrent)
+            {
+                stats.currentArmor = EditorGUILayout.IntSlider("Current Armor", stats.currentArmor, 0, stats.totalArmor);
+            }
+            stats.totalShield = EditorGUILayout.IntField("Total Shield", stats.totalShield);
+            if (showCurrent)
+            {
+                stats.currentShield = EditorGUILayout.IntSlider("Current Shield", stats.currentShield, 0, stats.totalShield);
+            }
+            stats.totalHealth = EditorGUILayout.IntField("Total Health", stats.totalHealth);
+            if (showCurrent)
+            {
+                stats.currentHealth = EditorGUILayout.IntSlider("Current Health", stats.currentHealth, 0, stats.totalHealth);
+            }
+            EditorGUILayout.Space();
+            stats.damageMultiplier = EditorGUILayout.Slider("Damage Multiplier", stats.damageMultiplier, 0.1f, 2);
+            stats.healingMultiplier = EditorGUILayout.Slider("Healing Multiplier", stats.healingMultiplier, 0.1f, 2);
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Armor", EditorStyles.boldLabel);
+            stats.armorDecayAmount = EditorGUILayout.IntField("Armor Decay Amount", stats.armorDecayAmount);
+            stats.armorDecayTime = EditorGUILayout.FloatField("Armor Decay Time", stats.armorDecayTime);
+            stats.armorDamageFraction = EditorGUILayout.FloatField("Armor Damage Fraction", stats.armorDamageFraction);
+            stats.armorRecoverFraction = EditorGUILayout.FloatField("Armor Recover Fraction", stats.armorRecoverFraction);
+            stats.currentRecoverArmor = EditorGUILayout.IntSlider("Recover Armor", stats.currentRecoverArmor, 0, stats.totalArmor);
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Testing", EditorStyles.boldLabel);
+            healthValue = EditorGUILayout.IntField("Health Value", healthValue);
+            damageDealt = EditorGUILayout.IntField("Damage Value", damageDealt);
+            if (GUILayout.Button("Do Damage", EditorStyles.miniButtonMid))
+            {
+                stats.RecoveryDamage(damageDealt);
+            }
+            
+    }
+}
+#endregion
+*/
