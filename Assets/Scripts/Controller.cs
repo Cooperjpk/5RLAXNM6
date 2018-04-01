@@ -69,6 +69,11 @@ public class Controller : MonoBehaviour
     public Ability ability7;
     public Ability ability8;
 
+    //Knockback
+    public float knockbackForce;
+    public float knockbackTime;
+    public float knockbackCounter;
+
     void Start()
     {
         rbody = GetComponent<Rigidbody>();
@@ -76,7 +81,6 @@ public class Controller : MonoBehaviour
 
     void Update()
     { 
-
         //Player Movement
         if (canMove)
         {
@@ -85,10 +89,6 @@ public class Controller : MonoBehaviour
             moveDirection *= moveSpeed * currentAccel;
             moveDirection.y -= gravity;
             moveDirection *= Time.deltaTime;
-
-            //Apply movement direction.
-            //transform.Translate(moveDirection, Space.World);
-            rbody.velocity = moveDirection;
 
             //If there is movement this frame, turn the character to face that direction of the movement.
             if (moveDirection.x != 0 || moveDirection.z != 0)
@@ -137,6 +137,9 @@ public class Controller : MonoBehaviour
                 }
             }
         }
+
+        //Apply movement direction.
+        rbody.velocity = moveDirection;
 
         //Player Abilities
         if (canAbility)
@@ -324,6 +327,18 @@ public class Controller : MonoBehaviour
             // Set the player's rotation to this new rotation.
             transform.rotation = newRotation;
         }
+    }
+
+    public void Knockback(Vector3 direction,float force,float time)
+    {
+        //Restrict a direcction to a fixed position
+        direction = direction.normalized;
+
+        //Turn off player movement
+        canMove = false;
+
+        //Apply the knockback force in direction
+        moveDirection = direction * knockbackForce;
     }
 }
 
