@@ -6,7 +6,10 @@ using UnityEditor;
 public class Statistics : MonoBehaviour
 {
     //TO DO
-    //DONE: Fix healing multiplier not working when A/S/H is at 0.
+    //Add in the functioanlity for status effects to be added.
+    //https://forum.unity.com/threads/rpg-buffs-and-debuffs.188882/
+    //http://theliquidfire.com/2015/09/14/tactics-rpg-status-effects/
+
     //Add shield functionality. Waiting on a "isincombat" bool from controller.
     //Make the speed drawn from here.
 
@@ -33,9 +36,28 @@ public class Statistics : MonoBehaviour
     [Range(-1, 1)]
     public float healingMultiplier;
 
+    //Status Effects
+    public List<StatusEffect> statusEffects = new List<StatusEffect>();
+
     void Start()
     {
         ResetHealth();
+    }
+
+    //Apply Effects
+    public void ApplyEffect()
+    {
+
+    }
+
+    void TriggerEffect()
+    {
+
+    }
+
+    void EndEffect()
+    {
+
     }
 
     //Change Health
