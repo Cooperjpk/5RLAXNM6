@@ -102,4 +102,57 @@ public class Interactable : MonoBehaviour
         obj.SetActive(setActive);
     }
 
+    /// <summary>
+    /// Use '0' for no minRange to be applied to targets.
+    /// </summary>
+    /// <param name="minRange"></param>
+    /// <returns></returns>
+    public GameObject ClosestTarget(float minRange)
+    {
+        List<GameObject> gos = new List<GameObject>();
+
+        foreach (GameObject gObject in GameObject.FindGameObjectsWithTag(targetTag))
+        {
+            gos.Add(gObject);
+        }
+
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 position = transform.position;
+
+        foreach (GameObject go in gos)
+        {
+            Vector3 diff = go.transform.position - position;
+            float curDistance = diff.sqrMagnitude;
+            if (curDistance < distance)
+            {
+                closest = go;
+                distance = curDistance;
+            }
+        }
+
+        if (closest != null)
+        {
+            if(minRange > 0)
+            {
+                if (Vector3.Distance(transform.position, closest.transform.position) <= minRange)
+                {
+                    return closest;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return closest;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
 }

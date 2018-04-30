@@ -22,14 +22,14 @@ public class Projectile : Interactable
     public enum HomingType
     {
         None,
-        SemiHoming,
+        Heatseeking,
         Homing
     }
 
     [Header("Homing")]
     public HomingType homingType;
     public float homingRadius;
-    public float semiHomingTurnSpeed;
+    public float homingTurnSpeed;
 
     [Header("Horizontal Movement")]
     public float horizontalMoveSpeed = 0.1f;
@@ -41,13 +41,20 @@ public class Projectile : Interactable
 
     void Update()
     {
-        if (homingType != HomingType.None)
-        {
-            //Add the functionality to look the target here
-        }
 
+        //While the projectile is alive...
         if (timeStamp >= Time.time)
         {
+            if (homingType == HomingType.Homing)
+            {
+                
+            }
+            else if(homingType == HomingType.Heatseeking)
+            {
+                //Heatseeking will always track the closest target
+                transform.LookAt(ClosestTarget(homingRadius).transform.position);
+            }
+
             //Move the projectile depending on current time in lifetime
             float timeProgress = (Time.time - zeroTime) / (timeStamp - zeroTime);
 
@@ -66,9 +73,11 @@ public class Projectile : Interactable
             rbody.velocity = totalSpeed;
             //transform.Translate(new Vector3(0, 0, speed));
         }
-        //If the lifetime is up on a projectile then it is no longer firing
+
+        //When the projectile reaches 0 lifetime...
         if (timeStamp < Time.time)
         {
+            //If the lifetime is up on a projectile then it is no longer firing
             Destruct();
         }
     }
@@ -133,5 +142,7 @@ public class Projectile : Interactable
             }
         }
     }
+
+    
 
 }
