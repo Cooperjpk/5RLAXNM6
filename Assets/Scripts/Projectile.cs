@@ -51,11 +51,21 @@ public class Projectile : Interactable
             }
             else if(homingType == HomingType.Heatseeking)
             {
-                //Heatseeking will always track the closest target
-                transform.LookAt(ClosestTarget(homingRadius).transform.position);
+                //Heatseeking will always track the closest target.
+                //transform.LookAt(ClosestTarget(homingRadius).transform.position);
+
+                //Gets a vector that points from the player's position to the target's.
+                var heading = ClosestTarget(homingRadius).transform.position - transform.position;
+
+                var distance = heading.magnitude;
+                var direction = heading / distance;
+
+                Vector3 directionY = new Vector3(0, direction.y, 0);
+                transform.Rotate(Vector3.forward + directionY,homingTurnSpeed * Time.deltaTime);
+                //transform.Rotate(0, direction.y, 0, Space.Self);
             }
 
-            //Move the projectile depending on current time in lifetime
+            //Move the projectile depending on current time in lifetime.
             float timeProgress = (Time.time - zeroTime) / (timeStamp - zeroTime);
 
             float currentSpeed = speedCurve.Evaluate(timeProgress) * speed;
