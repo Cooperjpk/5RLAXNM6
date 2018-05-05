@@ -4,9 +4,8 @@ using UnityEditor;
 
 public class Controller : MonoBehaviour
 {
-    /// <summary>
-    /// To increase the variation between characters, movement will be highly varied between characters. This means that some characters may not have any escape abilities but they have high movement speed, or this could mean an extremely slow character might be given high mobility through their abilities.
-    /// </summary>
+    //FIX THE RAYCAST FOR IS GROUNDED BEFORE YOU DO ANYTHING ELSE
+    //ALSO currently the jump height is pretty much dependant on how long the player presses the button which is good but the player can only press when the character is grounded. So the longer time its grounded the higher it jumps.
 
     public Camera cam;
     Rigidbody rbody;
@@ -14,10 +13,9 @@ public class Controller : MonoBehaviour
     public bool canMove = true;
     public bool canJump = true;
     public bool canAbility = true;
-    public bool isGrounded;
 
     public Vector3 moveDirection = Vector3.zero;
-    public float turnSpeed;
+    public float turnSpeed; //Make this private and set it.
     public float gravity = 0;
 
     Quaternion targetRotation = Quaternion.identity;
@@ -25,16 +23,20 @@ public class Controller : MonoBehaviour
     public float aimSensitivity = 0.25f;
 
     public float moveSpeed;
-    public float airSpeed;
-    private float actualSpeed;
-    public float jumpHeight;
+    public float horiAirSpeed;
+    public float vertAirSpeed = 1;
+
+    public float jumpGain;
     private float jumpValue = 0;
+    private bool grounded;
+
     float currentAccel = 1;
     public float maxAccel = 3;
     public float minAccel = 1;
     public float accelRate = 0.01f;
 
-    private float distanceToCheck = 1f;
+    private float distanceToCheck = 1.1f;
+    private int layerToAvoid = 1;
 
     public bool isInCombat = false;
 
@@ -60,7 +62,7 @@ public class Controller : MonoBehaviour
     string verticalInput = "Vertical";
     string aimHorizontalInput = "AimHorizontal";
     string aimVerticalInput = "AimVertical";
-    string jump = "Jump";
+    string jumpInput = "Jump";
     string ability1Input = "Fire1";
     string ability2Input = "Fire2";
     string ability3Input = "Fire3";
@@ -89,26 +91,26 @@ public class Controller : MonoBehaviour
         rbody = GetComponent<Rigidbody>();
     }
 
-    void FixedUpdate()
+    void Update()
     {
+        grounded = IsGrounded();
 
-        isGrounded = IsGrounded();
+        //Apply gravity if the character is not touching the ground.
+        if (!grounded)
+        {
+            jumpValue -= (gravity * vertAirSpeed);
+        }
 
         //Character Jumping
-        if(canJump)
+        //If the character is touching the ground, can jump and is pressing the jump input, then add to their jump value by jump gain.
+        if (canJump && grounded && Input.GetAxis(jumpInput) > 0)
         {
-            if (IsGrounded() && Input.GetAxis(jump) != 0)
-            {
-                actualSpeed = moveSpeed;
+            jumpValue += jumpGain;
+        }
 
-                jumpValue += jumpHeight;
-            }
-            else if(!IsGrounded())
-            {
-                actualSpeed = airSpeed;
-
-                jumpValue -= gravity;
-            }
+        if(grounded && Input.GetAxis(jumpInput) <= 0)
+        {
+            jumpValue = 0;
         }
 
         //Character Movement
@@ -116,11 +118,18 @@ public class Controller : MonoBehaviour
         {
             //Create movement direction.
             moveDirection = new Vector3(Input.GetAxis(horizontalInput), 0, Input.GetAxis(verticalInput));
-            moveDirection *= actualSpeed * currentAccel;
+            if (grounded)
+            {
+                moveDirection *= moveSpeed * currentAccel;
+            }
+            else
+            {
+                moveDirection *= horiAirSpeed * currentAccel;
+            }
             moveDirection.y = jumpValue;
             moveDirection *= Time.deltaTime;
 
-            //If there is movement this frame, turn the character to face that direction of the movement.
+            //If there is movement this frame, turn the character to face that direction of the movement and increase the acceleration.
             if (moveDirection.x != 0 || moveDirection.z != 0)
             {
                 //rbody.velocity = Vector3.zero;
@@ -146,6 +155,9 @@ public class Controller : MonoBehaviour
             //Apply turn rotation to the character at their turn speed.
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
 
+            //Apply Movement Direction.
+            rbody.velocity = moveDirection;
+
             //Aim Controls
             if (inputType == InputType.Keyboard)
             {
@@ -167,9 +179,6 @@ public class Controller : MonoBehaviour
                 }
             }
         }
-
-        //Apply movement direction.
-        rbody.velocity = moveDirection;
 
         //Character Abilities
         if (canAbility)
@@ -387,10 +396,18 @@ public class Controller : MonoBehaviour
 
     public bool IsGrounded()
     {
-        Vector3 dir = new Vector3(0, -1);
-
+        //int layerMask = 1 << layerToAvoid;
         return Physics.Raycast(transform.position, -Vector3.up, distanceToCheck + 0.1f);
+        //return Physics.CheckSphere(transform.position, distanceToCheck, layerMask);
     }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - distanceToCheck, transform.position.z));
+        //Gizmos.DrawWireSphere(transform.position, distanceToCheck);
+    }
+
 }
 
 /*
