@@ -12,7 +12,9 @@ public class Controller : MonoBehaviour
     Rigidbody rbody;
 
     public bool canMove = true;
+    public bool canJump = true;
     public bool canAbility = true;
+    public bool isGrounded;
 
     public Vector3 moveDirection = Vector3.zero;
     public float turnSpeed;
@@ -23,10 +25,16 @@ public class Controller : MonoBehaviour
     public float aimSensitivity = 0.25f;
 
     public float moveSpeed;
+    public float airSpeed;
+    private float actualSpeed;
+    public float jumpHeight;
+    private float jumpValue = 0;
     float currentAccel = 1;
     public float maxAccel = 3;
     public float minAccel = 1;
     public float accelRate = 0.01f;
+
+    private float distanceToCheck = 1f;
 
     public bool isInCombat = false;
 
@@ -52,6 +60,7 @@ public class Controller : MonoBehaviour
     string verticalInput = "Vertical";
     string aimHorizontalInput = "AimHorizontal";
     string aimVerticalInput = "AimVertical";
+    string jump = "Jump";
     string ability1Input = "Fire1";
     string ability2Input = "Fire2";
     string ability3Input = "Fire3";
@@ -80,15 +89,35 @@ public class Controller : MonoBehaviour
         rbody = GetComponent<Rigidbody>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        //Player Movement
+
+        isGrounded = IsGrounded();
+
+        //Character Jumping
+        if(canJump)
+        {
+            if (IsGrounded() && Input.GetAxis(jump) != 0)
+            {
+                actualSpeed = moveSpeed;
+
+                jumpValue += jumpHeight;
+            }
+            else if(!IsGrounded())
+            {
+                actualSpeed = airSpeed;
+
+                jumpValue -= gravity;
+            }
+        }
+
+        //Character Movement
         if (canMove)
         {
             //Create movement direction.
             moveDirection = new Vector3(Input.GetAxis(horizontalInput), 0, Input.GetAxis(verticalInput));
-            moveDirection *= moveSpeed * currentAccel;
-            moveDirection.y -= gravity;
+            moveDirection *= actualSpeed * currentAccel;
+            moveDirection.y = jumpValue;
             moveDirection *= Time.deltaTime;
 
             //If there is movement this frame, turn the character to face that direction of the movement.
@@ -142,7 +171,7 @@ public class Controller : MonoBehaviour
         //Apply movement direction.
         rbody.velocity = moveDirection;
 
-        //Player Abilities
+        //Character Abilities
         if (canAbility)
         {
             #region Ability 1
@@ -354,6 +383,13 @@ public class Controller : MonoBehaviour
         canAbility = false;
         yield return new WaitForSeconds(time);
         canAbility = true;
+    }
+
+    public bool IsGrounded()
+    {
+        Vector3 dir = new Vector3(0, -1);
+
+        return Physics.Raycast(transform.position, -Vector3.up, distanceToCheck + 0.1f);
     }
 }
 
