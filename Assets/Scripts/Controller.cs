@@ -6,6 +6,7 @@ public class Controller : MonoBehaviour
 {
     //FIX THE RAYCAST FOR IS GROUNDED BEFORE YOU DO ANYTHING ELSE
     //ALSO currently the jump height is pretty much dependant on how long the player presses the button which is good but the player can only press when the character is grounded. So the longer time its grounded the higher it jumps.
+    //Currently the controller has issues with the get button down and up and stuff. Its because its taking in the axis in the input axis. But I just want it to take the A button.
 
     public Camera cam;
     Rigidbody rbody;
@@ -109,7 +110,7 @@ public class Controller : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(Input.GetAxis(jumpInput) <= 0 && !jumpDown)
+        if (Input.GetAxis(jumpInput) <= 0 && !jumpDown)
         {
             jumpDown = true;
         }
@@ -122,11 +123,11 @@ public class Controller : MonoBehaviour
         //Character Jumping
         //If the character is touching the ground, can jump and is pressing the jump input, then add to their jump value by jump gain.
         if (Input.GetAxis(jumpInput) > 0 && jumpDown)
-            {
-            Debug.Log("KEY DOWN");
+        {
             if (canJump && grounded)
             {
-                moveDirection.y = jumpForce;
+                //moveDirection.y = jumpForce;
+                rbody.AddForce(new Vector3(0, jumpForce, 0));
                 stoppedJumping = false;
                 jumpDown = false;
             }
@@ -134,18 +135,17 @@ public class Controller : MonoBehaviour
         //if you keep holding down the mouse button...
         if ((Input.GetAxis(jumpInput) > 0) && !stoppedJumping)
         {
-            Debug.Log("KEY HELD");
             //and your counter hasn't reached zero...
             if (jumpTimeCounter > 0)
             {
                 //keep jumping!
-                moveDirection.y = jumpForce;
+                //moveDirection.y = jumpForce;
+                rbody.AddForce(new Vector3(0,jumpForce,0));
                 jumpTimeCounter -= Time.deltaTime;
             }
         }
         if (Input.GetAxis(jumpInput) <= 0 && jumpUp)
         {
-            Debug.Log("KEY UP");
             //stop jumping and set your counter to zero.  The timer will reset once we touch the ground again in the update function.
             jumpTimeCounter = 0;
             stoppedJumping = true;
