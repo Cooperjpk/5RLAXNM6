@@ -26,17 +26,23 @@ public class Controller : MonoBehaviour
     public float horiAirSpeed;
     public float vertAirSpeed = 1;
 
-    public float jumpGain;
-    private float jumpValue = 0;
-    private bool grounded;
+    public float jumpForce = 10;
+
+    private float jumpTime = 2;
+    private float jumpTimeCounter;
+    private bool stoppedJumping;
 
     float currentAccel = 1;
     public float maxAccel = 3;
     public float minAccel = 1;
     public float accelRate = 0.01f;
 
-    private float distanceToCheck = 1.1f;
-    private int layerToAvoid = 1;
+    private bool grounded;
+    private float distanceToCheck = 0.55f;
+    private Vector3 startPosition = new Vector3(0, 0.5f, 0);
+
+    private bool jumpDown;
+    private bool jumpUp;
 
     public bool isInCombat = false;
 
@@ -89,28 +95,61 @@ public class Controller : MonoBehaviour
     void Start()
     {
         rbody = GetComponent<Rigidbody>();
+        jumpTimeCounter = jumpTime;
     }
 
     void Update()
     {
         grounded = IsGrounded();
-
-        //Apply gravity if the character is not touching the ground.
-        if (!grounded)
+        if (canJump && grounded)
         {
-            jumpValue -= (gravity * vertAirSpeed);
+            jumpTimeCounter = jumpTime;
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if(Input.GetAxis(jumpInput) <= 0 && !jumpDown)
+        {
+            jumpDown = true;
+        }
+
+        if (Input.GetAxis(jumpInput) > 0 && !jumpUp)
+        {
+            jumpUp = true;
         }
 
         //Character Jumping
         //If the character is touching the ground, can jump and is pressing the jump input, then add to their jump value by jump gain.
-        if (canJump && grounded && Input.GetAxis(jumpInput) > 0)
-        {
-            jumpValue += jumpGain;
+        if (Input.GetAxis(jumpInput) > 0 && jumpDown)
+            {
+            Debug.Log("KEY DOWN");
+            if (canJump && grounded)
+            {
+                moveDirection.y = jumpForce;
+                stoppedJumping = false;
+                jumpDown = false;
+            }
         }
-
-        if(grounded && Input.GetAxis(jumpInput) <= 0)
+        //if you keep holding down the mouse button...
+        if ((Input.GetAxis(jumpInput) > 0) && !stoppedJumping)
         {
-            jumpValue = 0;
+            Debug.Log("KEY HELD");
+            //and your counter hasn't reached zero...
+            if (jumpTimeCounter > 0)
+            {
+                //keep jumping!
+                moveDirection.y = jumpForce;
+                jumpTimeCounter -= Time.deltaTime;
+            }
+        }
+        if (Input.GetAxis(jumpInput) <= 0 && jumpUp)
+        {
+            Debug.Log("KEY UP");
+            //stop jumping and set your counter to zero.  The timer will reset once we touch the ground again in the update function.
+            jumpTimeCounter = 0;
+            stoppedJumping = true;
+            jumpUp = false;
         }
 
         //Character Movement
@@ -126,7 +165,7 @@ public class Controller : MonoBehaviour
             {
                 moveDirection *= horiAirSpeed * currentAccel;
             }
-            moveDirection.y = jumpValue;
+            //moveDirection.y = jumpForce;
             moveDirection *= Time.deltaTime;
 
             //If there is movement this frame, turn the character to face that direction of the movement and increase the acceleration.
@@ -396,18 +435,16 @@ public class Controller : MonoBehaviour
 
     public bool IsGrounded()
     {
-        //int layerMask = 1 << layerToAvoid;
-        return Physics.Raycast(transform.position, -Vector3.up, distanceToCheck + 0.1f);
-        //return Physics.CheckSphere(transform.position, distanceToCheck, layerMask);
+        //return Physics.Raycast(transform.position, -Vector3.up, distanceToCheck);
+        return Physics.CheckSphere(transform.position - startPosition, distanceToCheck);
     }
 
     void OnDrawGizmos()
     {
         Gizmos.color = Color.cyan;
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - distanceToCheck, transform.position.z));
-        //Gizmos.DrawWireSphere(transform.position, distanceToCheck);
+        //Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - distanceToCheck, transform.position.z));
+        Gizmos.DrawWireSphere(transform.position - startPosition, distanceToCheck);
     }
-
 }
 
 /*

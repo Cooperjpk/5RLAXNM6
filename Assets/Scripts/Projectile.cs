@@ -41,7 +41,6 @@ public class Projectile : Interactable
 
     void Update()
     {
-
         //While the projectile is alive...
         if (timeStamp >= Time.time)
         {
@@ -83,9 +82,8 @@ public class Projectile : Interactable
             rbody.velocity = totalSpeed;
             //transform.Translate(new Vector3(0, 0, speed));
         }
-
         //When the projectile reaches 0 lifetime...
-        if (timeStamp < Time.time)
+        else if (timeStamp < Time.time)
         {
             //If the lifetime is up on a projectile then it is no longer firing
             Destruct();
@@ -99,12 +97,10 @@ public class Projectile : Interactable
         {
             float timeProgress = (Time.time - zeroTime) / (timeStamp - zeroTime);
             //Debug.Log (timeProgress);
-
             float currentDamageAmount = damageCurve.Evaluate(timeProgress);
             //Debug.Log (currentDamageAmount);
             int currentDamage = Mathf.RoundToInt(currentDamageAmount * damage);
             //Debug.Log (currentDamage);
-            //Apply direct damage here
             col.gameObject.GetComponent<Statistics>().ChangeHealth(currentDamage);
             //Go to destroyed state here if it is destructible by target
             if (destructUponTarget)
