@@ -218,6 +218,7 @@ public class Statistics : MonoBehaviour
             currentArmor = currentRecoverArmor;
         }
     }
+
 }
 
 #region Editor
@@ -261,7 +262,7 @@ public class StatsEditor : Editor
         stats.armorRecoverFraction = EditorGUILayout.FloatField("Armor Recover Fraction", stats.armorRecoverFraction);
         stats.currentRecoverArmor = EditorGUILayout.IntSlider("Recover Armor", stats.currentRecoverArmor, 0, stats.totalArmor);
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Testing", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Health Tests", EditorStyles.boldLabel);
         healthValue = EditorGUILayout.IntField("Health Value", healthValue);
         if (GUILayout.Button("Health Value", EditorStyles.miniButtonMid))
         {
@@ -272,6 +273,7 @@ public class StatsEditor : Editor
         {
             stats.RecoveryDamage(damageDealt);
         }
+
     }
 }
 #endregion
