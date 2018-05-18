@@ -3,26 +3,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// Ability class will have a huge amount of customization and all abilities will inherit from this class. Using the information provided by ability to carry out their abilities. If any new functionality is added, it should be done in the ability class and not the inheriting class.
+/// </summary>
 public class Ability : MonoBehaviour
 {
-    /// <summary>
-    /// Ability class will have a huge amount of customization and all abilities will inherit from this class. Using the information provided by ability to carry out their abilities. If any new functionality is added, it should be done in the ability class and not the inheriting class.
-    /// </summary>
-
-    public bool activeWhileHolding = false;
-    public float activeHoldingTick;
-    float activeNextTick;
-
-    //Button Interaction Types
-    public enum InteractionType
-    {
-        Cooldown,
-        Ammo,
-        Charged,
-    }
-
-    public InteractionType interactionType;
-
     public enum AbilityInput
     {
         Down,
@@ -34,14 +19,74 @@ public class Ability : MonoBehaviour
     private Interactable[] interactablePool;
     private int currentInteractable;
 
-    //Cooldown
-    float cooldownStamp;
-    public float cooldownTime;
+    //Ammo
+    private int ammoCount;
+    public int AmmoCount
+    {
+        get
+        {
+            return ammoCount;
+        }
+        set
+        {
+            ammoCount = value;
+        }
+    }
+    private int ammoMax;
+    public int AmmoMax
+    {
+        get
+        {
+            return ammoMax;
+        }
+        set
+        {
+            ammoMax = value;
+        }
+    }
+
+    //Timeframes
+    private float timeRate = 1;
+    public float TimeRate
+    {
+        get
+        {
+            return timeRate;
+        }
+        set
+        {
+            timeRate = value;
+        }
+    }
+    private float cooldownStamp;
+    public float CooldownStamp
+    {
+        get
+        {
+            return cooldownStamp;
+        }
+        set
+        {
+            cooldownStamp = value;
+        }
+    }
+    private float cooldownTime;
+    public float CooldownTime
+    {
+        get
+        {
+            return cooldownTime;
+        }
+        set
+        {
+            cooldownTime = value;
+        }
+    }
 
     public void InvokeAbility(AbilityInput abilityInput)
     {
         //Do different things depending on the if this was pressed, held or released.
-        switch(abilityInput)
+        switch (abilityInput)
         {
             default:
                 {
@@ -81,7 +126,6 @@ public class Ability : MonoBehaviour
         Debug.Log("Ability was released!");
     }
 
-    //Ability Functions
     //Interactable Pools
     /// <summary>
     /// Instantiate an array that is a pool of interactables, poolSize long.
@@ -95,7 +139,7 @@ public class Ability : MonoBehaviour
         {
             Interactable inter = Instantiate(interactable, transform.position, transform.rotation) as Interactable;
             interactablePool[j] = inter;
-            if(transformChild)
+            if (transformChild)
             {
                 inter.transform.parent = transform; //This will make the interactables all children of the weapon
             }
@@ -127,32 +171,87 @@ public class Ability : MonoBehaviour
         interactablePool[currentInteractable].interactableReady = false;
     }
 
-    //Cooldowns
+    //Charges & Channels
     /// <summary>
-    /// Returns true if time stamp is less than current time.
+    /// Change the current value of ammoCount by the value of count.
     /// </summary>
-    /// <returns></returns>
-    public bool CooldownReady()
+    /// <param name="ammoCount"></param>
+    public void AmmoSet(int count)
     {
-        //Cooldown Logic goes here
-        if(cooldownStamp <= Time.time)
+        AmmoCount += count;
+    }
+
+    /// <summary>
+    /// Sets the value of ammoCount to ammoMax.
+    /// </summary>
+    public void AmmoReload()
+    {
+        AmmoCount = AmmoMax;
+    }
+
+    //Timeframes
+    /// <summary>
+    /// Start the ticker.
+    /// </summary>
+    public void TimeSet(float time)
+    {
+        TimeStart();
+        CooldownStamp = CooldownTime + Time.time;
+        StartCoroutine(Ticker(TimeRate));
+    }
+
+    /// <summary>
+    /// Stops the ticker coroutine.
+    /// </summary>
+    public void TimeInterrupt()
+    {
+        TimeStop();
+        StopCoroutine(Ticker(TimeRate));
+    }
+
+    /// <summary>
+    /// Called everytime that the time is started.
+    /// </summary>
+    public virtual void TimeStart()
+    {
+        Debug.Log("Timestamp started!");
+    }
+
+    /// <summary>
+    /// Called everytime that the time is interrupted.
+    /// </summary>
+    public virtual void TimeStop()
+    {
+        Debug.Log("Timestamp interrupted!");
+    }
+
+    /// <summary>
+    /// Called everytime that the time is ended.
+    /// </summary>
+    public virtual void TimeEnd()
+    {
+        Debug.Log("Timestamp ended!");
+    }
+
+    /// <summary>
+    /// Called every frame that the time is still ticking.
+    /// </summary>
+    public virtual void TimeTicking()
+    {
+        Debug.Log("Timestamp ticking!");
+    }
+
+    private IEnumerator Ticker(float rate)
+    {
+        while (CooldownStamp <= Time.time)
         {
-            return true;
+            TimeTicking();
+            yield return new WaitForSeconds(rate);
         }
-        return false;
+        TimeEnd();
     }
 
-    /// <summary>
-    /// Set the new time stamp for cooldown that is time away.
-    /// </summary>
-    public void CooldownSet(float time)
-    {
-        cooldownStamp = Time.time + time;
-    }
 
-    //Charges
-    //Ammo & Reloading
-    //Channeling
 }
 
 
