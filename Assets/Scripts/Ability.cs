@@ -45,44 +45,6 @@ public class Ability : MonoBehaviour
         }
     }
 
-    //Timeframes
-    private float timeRate = 1;
-    public float TimeRate
-    {
-        get
-        {
-            return timeRate;
-        }
-        set
-        {
-            timeRate = value;
-        }
-    }
-    private float cooldownStamp;
-    public float CooldownStamp
-    {
-        get
-        {
-            return cooldownStamp;
-        }
-        set
-        {
-            cooldownStamp = value;
-        }
-    }
-    private float cooldownTime;
-    public float CooldownTime
-    {
-        get
-        {
-            return cooldownTime;
-        }
-        set
-        {
-            cooldownTime = value;
-        }
-    }
-
     public void InvokeAbility(AbilityInput abilityInput)
     {
         //Do different things depending on the if this was pressed, held or released.
@@ -188,70 +150,6 @@ public class Ability : MonoBehaviour
     {
         AmmoCount = AmmoMax;
     }
-
-    //Timeframes
-    /// <summary>
-    /// Start the ticker.
-    /// </summary>
-    public void TimeSet(float time)
-    {
-        TimeStart();
-        CooldownStamp = CooldownTime + Time.time;
-        StartCoroutine(Ticker(TimeRate));
-    }
-
-    /// <summary>
-    /// Stops the ticker coroutine.
-    /// </summary>
-    public void TimeInterrupt()
-    {
-        TimeStop();
-        StopCoroutine(Ticker(TimeRate));
-    }
-
-    /// <summary>
-    /// Called everytime that the time is started.
-    /// </summary>
-    public virtual void TimeStart()
-    {
-        Debug.Log("Timestamp started!");
-    }
-
-    /// <summary>
-    /// Called everytime that the time is interrupted.
-    /// </summary>
-    public virtual void TimeStop()
-    {
-        Debug.Log("Timestamp interrupted!");
-    }
-
-    /// <summary>
-    /// Called everytime that the time is ended.
-    /// </summary>
-    public virtual void TimeEnd()
-    {
-        Debug.Log("Timestamp ended!");
-    }
-
-    /// <summary>
-    /// Called every frame that the time is still ticking.
-    /// </summary>
-    public virtual void TimeTicking()
-    {
-        Debug.Log("Timestamp ticking!");
-    }
-
-    private IEnumerator Ticker(float rate)
-    {
-        while (CooldownStamp <= Time.time)
-        {
-            TimeTicking();
-            yield return new WaitForSeconds(rate);
-        }
-        TimeEnd();
-    }
-
-
 }
 
 

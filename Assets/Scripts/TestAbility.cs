@@ -13,7 +13,7 @@ public class TestAbility : Ability {
     {
         //Instantiate the pool of projectiles to use in ability.
         InteractablePoolInstantiate(interactable,interactablePoolSize,interactable,false);
-        CooldownSet(0);
+        TimeSet(0);
     }
 
     public override void AbilityDown()
